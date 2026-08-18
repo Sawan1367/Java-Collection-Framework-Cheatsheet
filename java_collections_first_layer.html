@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Java Collection Framework — First Layer Mastery</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F8FA;color:#1A1A2E;font-size:14px;line-height:1.5}
+.topbar{background:#1A1A2E;padding:13px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.topbar h1{color:#fff;font-size:16px;font-weight:600;flex:1;letter-spacing:-.01em}
+.topbar h1 span{color:#E8B84B;font-weight:400}
+.nav-tabs{display:flex;gap:4px}
+.nt{padding:6px 13px;border-radius:8px;border:none;font-size:12.5px;cursor:pointer;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);transition:all .15s;font-weight:500}
+.nt:hover{background:rgba(255,255,255,.18);color:#fff}
+.nt.act{background:#E8B84B;color:#1A1A2E}
+.wrap{max-width:1060px;margin:0 auto;padding:22px 18px}
+.view{display:none}.view.act{display:block}
+
+/* ── hierarchy ── */
+.hier-wrap{overflow-x:auto;padding-bottom:8px}
+.hier-svg{min-width:820px}
+
+/* ── interface selector ── */
+.iface-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+@media(max-width:700px){.iface-grid{grid-template-columns:repeat(2,1fr)}}
+.iface-tile{padding:10px 8px;border-radius:10px;border:2px solid transparent;cursor:pointer;background:#fff;transition:all .15s;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.iface-tile:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1)}
+.iface-tile.act{box-shadow:0 0 0 3px rgba(0,0,0,.12)}
+.iface-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.iface-sub{font-size:10px;color:#9898AA;line-height:1.3}
+.iface-count{font-size:10px;font-weight:600;margin-top:4px;opacity:.6}
+
+/* ── impl cards ── */
+.impl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.impl-card{background:#fff;border:1px solid #E2E2EB;border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .15s;border-left:4px solid transparent}
+.impl-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.08);transform:translateY(-1px)}
+.impl-card.act{box-shadow:0 0 0 2px rgba(0,0,0,.15)}
+.impl-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.impl-ds{font-size:11px;color:#9898AA;margin-bottom:6px}
+.impl-chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600}
+
+/* ── detail panel ── */
+.detail-panel{background:#fff;border:1px solid #E2E2EB;border-radius:14px;overflow:hidden}
+.detail-hdr{padding:14px 20px;display:flex;align-items:center;gap:14px}
+.detail-hdr-num{font-size:28px;font-weight:800;opacity:.15;line-height:1}
+.detail-hdr-name{font-size:20px;font-weight:700}
+.detail-hdr-iface{font-size:11px;opacity:.6;margin-top:2px}
+.detail-body{padding:14px 18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr}}
+.card{background:#F7F8FA;border:1px solid #E2E2EB;border-radius:10px;padding:12px 14px}
+.cl{font-size:10px;font-weight:700;color:#9898AA;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.mental-box{background:#F0EDFF;border-left:3px solid #534AB7;border-radius:0 7px 7px 0;padding:9px 12px;font-size:12.5px;color:#444;line-height:1.7;margin-bottom:8px}
+.insight-box{border:1px solid #D4B8F0;background:#FAF5FF;border-radius:7px;padding:8px 11px;font-size:12px;color:#3B1A6B;line-height:1.6}
+.ct{width:100%;border-collapse:collapse;font-size:12px}
+.ct th{font-size:9.5px;font-weight:700;color:#9898AA;text-transform:uppercase;padding:4px 6px;border-bottom:1px solid #E2E2EB;text-align:left}
+.ct td{padding:5px 6px;border-bottom:1px solid #F1F0F8;vertical-align:middle}
+.ct tr:last-child td{border-bottom:none}
+.ct tr:hover td{background:#FAFAFE}
+.o1{color:#3B6D11;font-family:monospace;font-size:11.5px;font-weight:700}
+.ol{color:#854F0B;font-family:monospace;font-size:11.5px;font-weight:700}
+.on{color:#A32D2D;font-family:monospace;font-size:11.5px;font-weight:700}
+.ox{color:#5A5A72;font-family:monospace;font-size:11.5px}
+.li{display:flex;gap:7px;align-items:flex-start;margin-bottom:5px;font-size:12.5px;line-height:1.5}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.code-snippet{background:#1A1A2E;border-radius:8px;padding:10px 13px;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;color:#E2E2EB;line-height:1.8;overflow-x:auto;white-space:pre;margin-top:6px}
+.code-snippet .kw{color:#E8B84B}
+.code-snippet .tp{color:#7EC8E3}
+.code-snippet .cm{color:#6B8899;font-style:italic}
+.legacy-banner{background:#FEF3CD;border:1px solid #F0D060;border-radius:7px;padding:7px 11px;font-size:12px;color:#7A5400;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+
+/* ── compare table ── */
+.cmp-wrap{overflow-x:auto;border-radius:12px;border:1px solid #E2E2EB;overflow:hidden;margin-bottom:10px}
+.cmp{border-collapse:collapse;width:100%;min-width:900px;font-size:12px}
+.cmp thead tr{background:#1A1A2E}
+.cmp th{color:#fff;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.cmp td{padding:6px 10px;border-bottom:1px solid #F1F0F8;vertical-align:middle}
+.cmp tr:nth-child(even) td{background:#FAFAFD}
+.cmp tr:last-child td{border-bottom:none}
+.cmp-iface{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px}
+.note-row{font-size:11px;color:#9898AA;margin-top:6px;line-height:1.6}
+
+/* ── wizard ── */
+.wiz-card{background:#fff;border:1px solid #E2E2EB;border-radius:14px;padding:22px;max-width:640px}
+.wq{font-size:16px;font-weight:600;line-height:1.5;margin-bottom:14px}
+.wo{display:block;width:100%;padding:11px 14px;border-radius:9px;border:1px solid #E2E2EB;font-size:13px;cursor:pointer;text-align:left;background:#fff;color:#1A1A2E;margin-bottom:7px;transition:all .15s;line-height:1.4}
+.wo:hover{background:#F0EDFF;border-color:#B8A8F0}
+.pb{height:4px;background:#E2E2EB;border-radius:2px;margin-bottom:16px;overflow:hidden}
+.pf{height:100%;background:#E8B84B;border-radius:2px;transition:width .35s}
+.wtrail{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.wchip{padding:3px 10px;border-radius:12px;font-size:11px;background:#FEF8E7;color:#7A5400;border:1px solid #F0D060;font-weight:500}
+.res-card{border:2px solid #E8B84B;border-radius:12px;padding:18px;margin-bottom:14px;background:#fff}
+.res-name{font-size:19px;font-weight:700;margin-bottom:4px}
+.res-why{font-size:13px;color:#444;line-height:1.65;margin-bottom:8px}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid #E2E2EB;font-size:12.5px;cursor:pointer;background:#fff;color:#1A1A2E;display:inline-flex;align-items:center;gap:5px;transition:all .15s;font-weight:500}
+.btn:hover{background:#F0EDFF}
+.btn.pri{background:#1A1A2E;color:#fff;border-color:#1A1A2E}
+.btn.pri:hover{background:#2E2E4E}
+.section-intro{background:#fff;border:1px solid #E2E2EB;border-radius:12px;padding:13px 17px;margin-bottom:14px}
+.section-intro p{font-size:13px;color:#444;line-height:1.7}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+.leg{font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+.badge-legacy{background:#FEF3CD;color:#7A5400;border:1px solid #F0D060;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:5px}
+.badge-preferred{background:#EAF3DE;color:#27500A;border:1px solid #97C459;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:5px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Java Collection Framework &mdash; <span>First Layer Mastery</span></h1>
+  <div class="nav-tabs">
+    <button class="nt act" data-view="explorer">Explorer</button>
+    <button class="nt" data-view="hierarchy">Hierarchy</button>
+    <button class="nt" data-view="compare">Compare all</button>
+    <button class="nt" data-view="wizard">Which class?</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- EXPLORER -->
+<div id="view-explorer" class="view act">
+  <div class="iface-grid" id="iface-tiles"></div>
+  <div class="impl-grid" id="impl-cards"></div>
+  <div id="detail-area"></div>
+</div>
+
+<!-- HIERARCHY -->
+<div id="view-hierarchy" class="view">
+  <div class="section-intro">
+    <p>The Java Collection Framework hierarchy. <b>Interfaces</b> define contracts; <b>concrete classes</b> provide implementations. Note that <code>Map</code> is separate from <code>Collection</code> but part of the framework.</p>
+  </div>
+  <div class="hier-wrap">
+    <svg class="hier-svg" viewBox="0 0 820 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:820px">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#B8B8CC"/>
+        </marker>
+        <marker id="arr-impl" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#D4D4E8" stroke="#9898AA" stroke-width="0.5"/>
+        </marker>
+      </defs>
+      <!-- style helpers via JS below -->
+      <g id="hier-g"></g>
+    </svg>
+  </div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:#9898AA">
+    <span style="display:flex;align-items:center;gap:6px"><svg width="30" height="12"><line x1="0" y1="6" x2="22" y2="6" stroke="#B8B8CC" stroke-width="1.5" marker-end="url(#arr)"/></svg> extends / implements</span>
+    <span style="display:flex;align-items:center;gap=6px;margin-left:8px">
+      <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#E8F0FE;border:1.5px solid #4A90D9;margin-right:5px"></span>Interface
+    </span>
+    <span style="display:flex;align-items:center;gap=6px;margin-left:8px">
+      <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#EAF3DE;border:1.5px solid #3B6D11;margin-right:5px"></span>Concrete class
+    </span>
+    <span style="display:flex;align-items:center;gap=6px;margin-left:8px">
+      <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#FEF3CD;border:1.5px dashed #D0A000;margin-right:5px"></span>Legacy
+    </span>
+  </div>
+</div>
+
+<!-- COMPARE -->
+<div id="view-compare" class="view">
+  <div class="section-intro">
+    <p>All concrete collection classes compared. Sorted by interface family. Click any class name to view its full detail in the Explorer.</p>
+    <div class="legend">
+      <span class="leg"><span class="leg-dot" style="background:#3B6D11"></span><span class="o1">O(1)</span> constant</span>
+      <span class="leg"><span class="leg-dot" style="background:#854F0B"></span><span class="ol">O(log n)</span> logarithmic</span>
+      <span class="leg"><span class="leg-dot" style="background:#A32D2D"></span><span class="on">O(n)</span> linear</span>
+    </div>
+  </div>
+  <div class="cmp-wrap"><table class="cmp" id="cmp-table"></table></div>
+  <p class="note-row">* amortised &nbsp;|&nbsp; W = capacity, k = enum count &nbsp;|&nbsp; ‡ synchronized (thread-safe but slower) &nbsp;|&nbsp; † avoid in new code — use ArrayDeque instead</p>
+</div>
+
+<!-- WIZARD -->
+<div id="view-wizard" class="view">
+  <div class="section-intro">
+    <p>Answer 4 quick questions to get the right Java Collection class for your use case.</p>
+  </div>
+  <div class="wiz-card" id="wiz"></div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════════════════
+const IFACES = [
+  {id:'list',  name:'List',          clr:'#4A90D9', bg:'#E8F0FE', sub:'Ordered, index-based, duplicates allowed',         count:4},
+  {id:'set',   name:'Set',           clr:'#3B6D11', bg:'#EAF3DE', sub:'Unique elements, no guaranteed order (by default)', count:4},
+  {id:'queue', name:'Queue / Deque', clr:'#854F0B', bg:'#FAEEDA', sub:'FIFO/LIFO access, front/rear operations',           count:3},
+  {id:'map',   name:'Map',           clr:'#534AB7', bg:'#EEEDFE', sub:'Key-value pairs, keys must be unique',              count:5},
+  {id:'all',   name:'All classes',   clr:'#1A1A2E', bg:'#F0EFF8', sub:'Show every implementation at once',                count:16},
+];
+
+const IMPLS = [
+// ── LIST ──────────────────────────────────────────────────────────────────────
+{id:'arraylist', iface:'list', name:'ArrayList', ds:'Dynamic Array', clr:'#4A90D9', bg:'#E8F0FE', legacy:false,
+ mental:'Internally a plain Object[] array. When capacity is exceeded, a new array of 1.5× size is allocated and all elements are copied. This amortizes the resize cost to O(1) per append on average. Think of it as the Java equivalent of Python\'s list.',
+ insight:'For most use cases — iteration, random access, append — ArrayList is the default choice. Only switch to LinkedList when you need many O(1) insertions/deletions at both ends (use ArrayDeque then instead).',
+ when:'Default List when you need indexed access, frequent reads, or append-heavy workloads.',
+ avoid:'Frequent insertions or deletions in the middle (shifting costs O(n)). Highly concurrent writes (not thread-safe).',
+ costs:[{op:'get(i) — random access',crud:'R',avg:'O(1)',note:'Direct array index'},{op:'contains(x) / indexOf',crud:'R',avg:'O(n)',note:'Linear scan'},{op:'add(x) — append',crud:'C',avg:'O(1)*',note:'Amortised; resize is O(n)'},{op:'add(i, x) — insert at index',crud:'C',avg:'O(n)',note:'Shift elements right'},{op:'set(i, x) — update',crud:'U',avg:'O(1)',note:'Direct write'},{op:'remove(i) — by index',crud:'D',avg:'O(n)',note:'Shift left'},{op:'remove(x) — by value',crud:'D',avg:'O(n)',note:'Scan + shift'}],
+ code:`// Declaration
+List<String> list = new ArrayList<>();
+
+// CRUD
+list.add("Alice");           // append — O(1)*
+list.add(1, "Bob");          // insert at index — O(n)
+String s = list.get(0);      // random access — O(1)
+list.set(0, "Charlie");      // update — O(1)
+list.remove(0);              // remove by index — O(n)
+list.remove("Alice");        // remove by value — O(n)
+
+// Iteration (cache size)
+for (String x : list) { ... }`,
+ uses:['Storing results of a query to iterate over','Building a list of items when order matters','Backing an adapter in Android/Spring'],
+},
+
+{id:'linkedlist', iface:'list', name:'LinkedList', ds:'Doubly Linked List', clr:'#4A90D9', bg:'#E8F0FE', legacy:false,
+ mental:'Each node stores a value, a prev pointer, and a next pointer. No array, no shifting. Head and tail pointers give O(1) access to both ends. Implements both List AND Deque — it can act as a stack, queue, or deque simultaneously.',
+ insight:'LinkedList sounds attractive but is rarely the right choice. Poor cache locality (nodes scattered in heap) makes it slower than ArrayList in practice for most List operations. Use ArrayDeque for stack/queue needs and ArrayList for indexed access.',
+ when:'Need O(1) insert/delete at both ends AND also need List semantics (indexed access). Very rare — usually ArrayDeque is better.',
+ avoid:'Random access by index (O(n) traversal). Large datasets where cache performance matters.',
+ costs:[{op:'get(i) — random access',crud:'R',avg:'O(n)',note:'Traverse from head/tail'},{op:'getFirst() / getLast()',crud:'R',avg:'O(1)',note:'Head/tail pointers'},{op:'add(x) — append',crud:'C',avg:'O(1)',note:'Tail pointer'},{op:'addFirst(x) / addLast(x)',crud:'C',avg:'O(1)',note:'Pointer re-wiring'},{op:'add(i, x) — insert at index',crud:'C',avg:'O(n)',note:'Traverse to position'},{op:'set(i, x)',crud:'U',avg:'O(n)',note:'Traverse then write'},{op:'remove() — head',crud:'D',avg:'O(1)',note:'Update head pointer'},{op:'remove(i)',crud:'D',avg:'O(n)',note:'Traverse + re-wire'}],
+ code:`// As a List
+List<String> list = new LinkedList<>();
+
+// As a Deque (preferred usage)
+Deque<String> deque = new LinkedList<>();
+deque.addFirst("A");    // O(1)
+deque.addLast("B");     // O(1)
+deque.peekFirst();      // O(1)
+deque.pollFirst();      // O(1)
+
+// As a Queue
+Queue<String> queue = new LinkedList<>();
+queue.offer("X");       // enqueue
+queue.poll();           // dequeue`,
+ uses:['Implementing a queue before Java 6 (now use ArrayDeque)','When you need a List that also acts as a Deque','Undo/redo history with O(1) insert at both ends'],
+},
+
+{id:'vector', iface:'list', name:'Vector', ds:'Synchronized Dynamic Array', clr:'#D0A000', bg:'#FEF3CD', legacy:true,
+ mental:'Vector is essentially a synchronized ArrayList. Every method is wrapped in a synchronized block, making it thread-safe but significantly slower under contention. Doubles its capacity (vs ArrayList\'s 1.5×) on resize.',
+ insight:'Legacy class from Java 1.0. In modern Java, prefer ArrayList (single-threaded) or Collections.synchronizedList(new ArrayList<>()) or CopyOnWriteArrayList (concurrent). Vector is kept for backward compatibility only.',
+ when:'Legacy code maintenance only. Never choose Vector in new code.',
+ avoid:'All new development. Use CopyOnWriteArrayList or synchronizedList for thread-safety.',
+ costs:[{op:'get(i)',crud:'R',avg:'O(1)',note:'Synchronized — lock overhead'},{op:'add(x)',crud:'C',avg:'O(1)*',note:'Amortised, doubles capacity'},{op:'add(i, x)',crud:'C',avg:'O(n)',note:'Shift + synchronized'},{op:'set(i, x)',crud:'U',avg:'O(1)',note:'Synchronized write'},{op:'remove(i)',crud:'D',avg:'O(n)',note:'Shift + synchronized'}],
+ code:`// ⚠ Legacy — avoid in new code
+Vector<String> v = new Vector<>();
+v.add("A");
+v.get(0);
+
+// Preferred alternatives:
+List<String> safe = Collections.synchronizedList(new ArrayList<>());
+// or for concurrent reads:
+List<String> cow = new CopyOnWriteArrayList<>();`,
+ uses:['Maintaining legacy Java 1.x codebases','Situations requiring exactly the Vector API for compatibility'],
+},
+
+{id:'stack_cls', iface:'list', name:'Stack', ds:'LIFO Stack (extends Vector)', clr:'#D0A000', bg:'#FEF3CD', legacy:true,
+ mental:'Stack extends Vector and adds push(), pop(), peek(), empty(), search(). Inherits all of Vector\'s synchronized overhead. The underlying data structure is still an array, with push/pop at the end.',
+ insight:'Legacy. Javadoc itself says "a more complete and consistent set of LIFO stack operations is provided by the Deque interface and its implementations, ArrayDeque." Use ArrayDeque<> as a stack in all new code.',
+ when:'Legacy code only. Never use in new development.',
+ avoid:'All new code. Use Deque<E> stack = new ArrayDeque<>().',
+ costs:[{op:'push(x)',crud:'C',avg:'O(1)*',note:'Append to end (sync)'},{op:'peek()',crud:'R',avg:'O(1)',note:'Read last element'},{op:'pop()',crud:'D',avg:'O(1)',note:'Remove last element'},{op:'search(x)',crud:'R',avg:'O(n)',note:'Scan from top'}],
+ code:`// ⚠ Legacy — avoid in new code
+Stack<Integer> s = new Stack<>();
+s.push(1); s.push(2);
+s.peek();   // 2
+s.pop();    // 2
+
+// ✅ Preferred: Deque as stack
+Deque<Integer> stack = new ArrayDeque<>();
+stack.push(1);   // addFirst
+stack.peek();    // peekFirst
+stack.pop();     // removeFirst`,
+ uses:['Legacy code only'],
+},
+
+// ── SET ───────────────────────────────────────────────────────────────────────
+{id:'hashset', iface:'set', name:'HashSet', ds:'Hash Table (wraps HashMap)', clr:'#3B6D11', bg:'#EAF3DE', legacy:false,
+ mental:'HashSet is literally a HashMap<E, DUMMY> under the hood — each element is stored as a key, all mapped to the same dummy object. Provides O(1) average add, remove, contains. No ordering of elements whatsoever.',
+ insight:'Default Set choice. O(1) for all three core operations. The only thing it cannot do is tell you the insertion order or give you sorted output. For those, use LinkedHashSet or TreeSet.',
+ when:'Fast membership testing, deduplication, set operations (union, intersection). No ordering needed.',
+ avoid:'When you need sorted output (use TreeSet) or insertion-order iteration (use LinkedHashSet).',
+ costs:[{op:'add(x)',crud:'C',avg:'O(1)',note:'Hash + bucket insert'},{op:'contains(x)',crud:'R',avg:'O(1)',note:'Hash + bucket lookup'},{op:'iterator() — traverse all',crud:'R',avg:'O(n)',note:'Scan all buckets'},{op:'remove(x)',crud:'D',avg:'O(1)',note:'Hash + bucket remove'}],
+ code:`Set<String> set = new HashSet<>();
+set.add("Alice");
+set.add("Bob");
+set.add("Alice");       // duplicate ignored
+
+set.contains("Alice");  // true  — O(1)
+set.remove("Bob");      // O(1)
+set.size();             // 1
+
+// Set operations
+Set<Integer> a = new HashSet<>(List.of(1,2,3));
+Set<Integer> b = new HashSet<>(List.of(2,3,4));
+a.retainAll(b);  // intersection: {2,3}`,
+ uses:['Deduplication of a list (convert list → HashSet)','Tracking visited nodes in BFS/DFS','Fast membership check (word dictionary, seen elements)'],
+},
+
+{id:'linkedhashset', iface:'set', name:'LinkedHashSet', ds:'Hash Table + Doubly Linked List', clr:'#3B6D11', bg:'#EAF3DE', legacy:false,
+ mental:'Extends HashSet by maintaining a doubly-linked list through all entries in insertion order. O(1) add/remove/contains like HashSet, but iterator returns elements in the order they were inserted. Slightly more memory than HashSet.',
+ insight:'Choose LinkedHashSet when you need O(1) set operations AND predictable iteration order (insertion order). If you need sorted order, use TreeSet. If order doesn\'t matter at all, use HashSet (slightly faster).',
+ when:'Need uniqueness + iteration in insertion order. Cache-friendly output, maintaining user-defined ordering.',
+ avoid:'When sorted order is needed (TreeSet). When memory is very tight (linked list overhead per entry).',
+ costs:[{op:'add(x)',crud:'C',avg:'O(1)',note:'Hash + link into list'},{op:'contains(x)',crud:'R',avg:'O(1)',note:'Hash lookup'},{op:'iterate all',crud:'R',avg:'O(n)',note:'Follow linked list — predictable order'},{op:'remove(x)',crud:'D',avg:'O(1)',note:'Hash + unlink'}],
+ code:`Set<String> set = new LinkedHashSet<>();
+set.add("Banana");
+set.add("Apple");
+set.add("Cherry");
+
+// Iterates in insertion order: Banana, Apple, Cherry
+for (String s : set) System.out.println(s);
+
+set.contains("Apple");  // true — O(1)`,
+ uses:['LRU-like ordered unique sets','Maintaining a user\'s selected items in order','Deduplication that must preserve first-seen order'],
+},
+
+{id:'treeset', iface:'set', name:'TreeSet', ds:'Red-Black Tree (NavigableSet)', clr:'#3B6D11', bg:'#EAF3DE', legacy:false,
+ mental:'Backed by a TreeMap, which is a self-balancing Red-Black tree. Elements are always stored in sorted (natural or comparator) order. Every insert/remove/contains traverses O(log n) tree nodes. Implements NavigableSet — supports floor, ceiling, higher, lower, subSet, headSet, tailSet.',
+ insight:'TreeSet is the go-to when you need sorted unique elements with O(log n) operations. Unlike HashSet you can ask "what is the next element after X?" or "give me all elements between A and B?" — in O(log n).',
+ when:'Sorted unique elements, range queries, floor/ceiling lookups, ordered iteration in natural order.',
+ avoid:'When you only need fast contains/add without ordering (HashSet is faster). Not null-friendly (NullPointerException on add(null) with natural ordering).',
+ costs:[{op:'add(x)',crud:'C',avg:'O(log n)',note:'Red-Black tree insert + rebalance'},{op:'contains(x)',crud:'R',avg:'O(log n)',note:'Binary search in tree'},{op:'first() / last()',crud:'R',avg:'O(log n)',note:'Leftmost/rightmost node'},{op:'floor(x) / ceiling(x)',crud:'R',avg:'O(log n)',note:'NavigableSet API'},{op:'subSet(a,b)',crud:'R',avg:'O(log n + k)',note:'k = elements in range'},{op:'remove(x)',crud:'D',avg:'O(log n)',note:'Tree delete + rebalance'}],
+ code:`NavigableSet<Integer> ts = new TreeSet<>();
+ts.add(5); ts.add(2); ts.add(8); ts.add(1);
+
+// Always sorted: 1 2 5 8
+ts.first();        // 1
+ts.last();         // 8
+ts.floor(3);       // 2  (≤ 3)
+ts.ceiling(3);     // 5  (≥ 3)
+ts.higher(5);      // 8  (> 5)
+ts.subSet(2, 6);   // {2, 5}  range query
+
+// Descending iteration
+for (int x : ts.descendingSet()) { ... }`,
+ uses:['Sorted leaderboard with rank queries','Event scheduling (next event after time T)','Finding closest element to a target','Implementing an ordered set with range queries'],
+},
+
+{id:'enumset', iface:'set', name:'EnumSet', ds:'Bit Vector (enum-specific)', clr:'#3B6D11', bg:'#EAF3DE', legacy:false,
+ mental:'Internally uses a single long (or array of long) as a bit vector — each bit corresponds to one enum constant. All operations are bitwise: add is OR, remove is AND NOT, contains is AND. Extremely compact and fast.',
+ insight:'The most efficient Set implementation for enum types — O(1) and essentially just a bit operation. Cannot be used with non-enum types. 64 or fewer enum constants fit in a single long; more use a long[].',
+ when:'Working with a fixed set of flags/options represented as an enum. Day-of-week filters, feature flags, permissions.',
+ avoid:'Non-enum types (won\'t compile). When enum type has > 128 constants (still works but uses RegularEnumSet vs JumboEnumSet).',
+ costs:[{op:'add(x)',crud:'C',avg:'O(1)',note:'Single bitwise OR'},{op:'contains(x)',crud:'R',avg:'O(1)',note:'Single bitwise AND'},{op:'addAll(set)',crud:'C',avg:'O(1)',note:'Single OR of two longs'},{op:'remove(x)',crud:'D',avg:'O(1)',note:'Bitwise AND NOT'},{op:'iterate all',crud:'R',avg:'O(n)',note:'Scan set bits'}],
+ code:`enum Day { MON, TUE, WED, THU, FRI, SAT, SUN }
+
+// Create sets
+EnumSet<Day> weekend  = EnumSet.of(Day.SAT, Day.SUN);
+EnumSet<Day> weekdays = EnumSet.complementOf(weekend);
+EnumSet<Day> all      = EnumSet.allOf(Day.class);
+
+weekend.contains(Day.SAT);   // true — O(1) bit op
+weekdays.add(Day.SAT);       // O(1)
+
+// Extremely fast set operations
+EnumSet<Day> both = EnumSet.copyOf(weekend);
+both.addAll(weekdays);  // O(1) — one bitwise OR`,
+ uses:['Day-of-week or month-of-year filters','Feature flags / permissions (as enum constants)','Representing a subset of a fixed set of options'],
+},
+
+// ── QUEUE / DEQUE ─────────────────────────────────────────────────────────────
+{id:'arraydeque', iface:'queue', name:'ArrayDeque', ds:'Resizable Array Deque', clr:'#854F0B', bg:'#FAEEDA', legacy:false,
+ mental:'Internally a circular resizable array with head and tail indices. Adding to either end advances the respective index (wrapping around). No null elements allowed. Both ends are O(1). No linked-list overhead — better cache performance than LinkedList.',
+ insight:'ArrayDeque is the preferred implementation for both Stack and Queue in Java. Faster than Stack (no synchronization) and faster than LinkedList (contiguous array → cache hits). Use it for DFS/BFS, undo stacks, sliding window queues.',
+ when:'Any stack (LIFO) or queue (FIFO) need in single-threaded code. Also deque (double-ended queue). Sliding window problems.',
+ avoid:'Multi-threaded access (use BlockingDeque). When null elements are required.',
+ costs:[{op:'addFirst(x) / push(x)',crud:'C',avg:'O(1)',note:'Circular array — decrement head'},{op:'addLast(x) / offer(x)',crud:'C',avg:'O(1)',note:'Circular array — increment tail'},{op:'peekFirst() / peek()',crud:'R',avg:'O(1)',note:'Read head element'},{op:'peekLast()',crud:'R',avg:'O(1)',note:'Read tail element'},{op:'pollFirst() / poll()',crud:'D',avg:'O(1)',note:'Remove head'},{op:'pollLast() / pop()',crud:'D',avg:'O(1)',note:'Remove tail'},{op:'contains(x)',crud:'R',avg:'O(n)',note:'Linear scan'}],
+ code:`// As a Stack (LIFO)
+Deque<Integer> stack = new ArrayDeque<>();
+stack.push(1);     // addFirst
+stack.push(2);
+stack.peek();      // 2 — peekFirst
+stack.pop();       // 2 — removeFirst
+
+// As a Queue (FIFO)
+Queue<String> queue = new ArrayDeque<>();
+queue.offer("A");  // addLast
+queue.offer("B");
+queue.poll();      // "A" — removeFirst
+queue.peek();      // "B"
+
+// As a Deque
+Deque<Integer> deque = new ArrayDeque<>();
+deque.addFirst(1); deque.addLast(2);
+deque.peekLast();  // 2`,
+ uses:['BFS (queue) and DFS (stack) graph traversal','Monotonic deque for sliding window max/min','Undo/redo history','Palindrome checker (deque)'],
+},
+
+{id:'priorityqueue', iface:'queue', name:'PriorityQueue', ds:'Binary Min-Heap (array-backed)', clr:'#854F0B', bg:'#FAEEDA', legacy:false,
+ mental:'An array-backed complete binary tree satisfying the min-heap property: parent ≤ children. The minimum element is always at index 0. offer() appends to end and sifts up; poll() replaces root with last element and sifts down. Custom ordering via Comparator.',
+ insight:'PriorityQueue gives you the smallest (or highest-priority) element in O(1) and removes it in O(log n). For a max-heap, pass Comparator.reverseOrder(). Does NOT guarantee any order when iterating — only poll() returns elements in priority order.',
+ when:'Always need the next minimum (or maximum) element efficiently. Dijkstra, task scheduling, top-K problems.',
+ avoid:'Random access by element value. Ordered iteration of ALL elements (sort instead). Thread-safe queues (use PriorityBlockingQueue).',
+ costs:[{op:'offer(x) / add(x)',crud:'C',avg:'O(log n)',note:'Append + sift up'},{op:'peek()',crud:'R',avg:'O(1)',note:'Root = minimum always'},{op:'poll()',crud:'D',avg:'O(log n)',note:'Remove root + sift down'},{op:'contains(x)',crud:'R',avg:'O(n)',note:'Linear scan (no heap ordering on values)'},{op:'size()',crud:'R',avg:'O(1)',note:'Maintained field'},{op:'remove(x)',crud:'D',avg:'O(n)',note:'Scan + sift'}],
+ code:`// Min-heap (natural ordering)
+PriorityQueue<Integer> pq = new PriorityQueue<>();
+pq.offer(5); pq.offer(1); pq.offer(3);
+pq.peek();   // 1 — minimum
+pq.poll();   // 1 — remove minimum
+
+// Max-heap
+PriorityQueue<Integer> maxPQ =
+    new PriorityQueue<>(Comparator.reverseOrder());
+maxPQ.offer(5); maxPQ.offer(1);
+maxPQ.poll();   // 5 — maximum
+
+// Custom comparator (e.g., by string length)
+PriorityQueue<String> byLen =
+    new PriorityQueue<>(Comparator.comparingInt(String::length));`,
+ uses:['Dijkstra shortest path (min-heap on distance)','Top-K most frequent elements (size-K min-heap)','Merge K sorted lists','Median from data stream (two heaps)'],
+},
+
+{id:'linkedlist_q', iface:'queue', name:'LinkedList (as Queue/Deque)', ds:'Doubly Linked List', clr:'#854F0B', bg:'#FAEEDA', legacy:false,
+ mental:'LinkedList implements both List and Deque, so it also satisfies Queue. O(1) add/remove at both ends. However, poor cache locality compared to ArrayDeque makes it slower in practice. The same LinkedList object from the List section.',
+ insight:'Prefer ArrayDeque over LinkedList for queue/deque usage. LinkedList only wins when you also need List semantics (indexed access) on the same object — which is very rarely necessary.',
+ when:'When you need a queue AND List semantics on the same collection object. Legacy code expecting LinkedList.',
+ avoid:'All new queue/deque code — use ArrayDeque instead.',
+ costs:[{op:'offer(x) / addLast(x)',crud:'C',avg:'O(1)',note:'Tail pointer'},{op:'poll() / removeFirst()',crud:'D',avg:'O(1)',note:'Head pointer'},{op:'peek() / peekFirst()',crud:'R',avg:'O(1)',note:'Head element'},{op:'get(i)',crud:'R',avg:'O(n)',note:'Traverse — List access'}],
+ code:`// ⚠ Prefer ArrayDeque for pure queue/deque
+Queue<String> queue = new LinkedList<>();
+queue.offer("A"); queue.offer("B");
+queue.poll();   // "A"
+
+// Use ArrayDeque instead:
+Queue<String> better = new ArrayDeque<>();`,
+ uses:['Legacy code expecting Queue<E> with LinkedList','Rarely: when List + Queue semantics are needed on one object'],
+},
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+{id:'hashmap', iface:'map', name:'HashMap', ds:'Hash Table (array of linked lists/trees)', clr:'#534AB7', bg:'#EEEDFE', legacy:false,
+ mental:'Array of buckets; each key is hashed to a bucket index. Collisions resolved by chaining (linked list; Java 8+ converts to Red-Black tree when chain length > 8). Load factor 0.75 triggers resize to 2× capacity. Null key is allowed (stored in bucket 0). No ordering.',
+ insight:'Default Map choice. O(1) average for get/put/remove. The Java 8 tree-bin optimization (TREEIFY_THRESHOLD=8) prevents worst-case O(n) from hash collisions degrading to O(log n). For sorted keys use TreeMap; for insertion order use LinkedHashMap.',
+ when:'Fast key-value lookup with no ordering requirement. Frequency counting, caching, grouping.',
+ avoid:'Sorted key iteration (use TreeMap). Insertion-order iteration (use LinkedHashMap). Concurrent writes without external synchronization (use ConcurrentHashMap).',
+ costs:[{op:'put(k, v)',crud:'C',avg:'O(1)',note:'Hash + chain; O(log n) in worst bucket'},{op:'get(k)',crud:'R',avg:'O(1)',note:'Hash lookup; O(log n) in worst bucket'},{op:'containsKey(k)',crud:'R',avg:'O(1)',note:'Same as get'},{op:'entrySet() iteration',crud:'R',avg:'O(n)',note:'Scan all buckets'},{op:'remove(k)',crud:'D',avg:'O(1)',note:'Hash + unlink'}],
+ code:`Map<String, Integer> freq = new HashMap<>();
+
+// put / getOrDefault / merge
+freq.put("apple", 1);
+freq.merge("apple", 1, Integer::sum); // apple → 2
+freq.getOrDefault("mango", 0);        // 0
+
+// Iteration
+for (Map.Entry<String, Integer> e : freq.entrySet()) {
+    System.out.println(e.getKey() + ": " + e.getValue());
+}
+
+// Java 8+ convenience
+freq.computeIfAbsent("fig", k -> 0);
+freq.forEach((k, v) -> System.out.println(k + "=" + v));`,
+ uses:['Two-sum (store value → index)','Word frequency counter','Graph adjacency list: Map<Node, List<Node>>','Memoisation cache in top-down DP'],
+},
+
+{id:'linkedhashmap', iface:'map', name:'LinkedHashMap', ds:'Hash Table + Doubly Linked List', clr:'#534AB7', bg:'#EEEDFE', legacy:false,
+ mental:'Extends HashMap by threading a doubly-linked list through all entries in insertion order (or access order when constructed with accessOrder=true). O(1) get/put/remove like HashMap, with predictable iteration order.',
+ insight:'Two modes: insertion-order (default) and access-order (for LRU). Override removeEldestEntry() to implement a bounded LRU cache in ~5 lines. Access-order mode moves the most-recently-get entry to the tail — oldest is always at the head.',
+ when:'Need key-value lookup + predictable iteration order. LRU cache. Maintaining the order of first-seen keys.',
+ avoid:'When neither order nor O(1) lookup is needed (use HashMap for speed, TreeMap for sorting).',
+ costs:[{op:'put(k, v)',crud:'C',avg:'O(1)',note:'Hash + link into list'},{op:'get(k)',crud:'R',avg:'O(1)',note:'Hash lookup; moves to tail if accessOrder'},{op:'iterate all entries',crud:'R',avg:'O(n)',note:'Follow linked list — predictable order'},{op:'remove(k)',crud:'D',avg:'O(1)',note:'Hash + unlink'}],
+ code:`// Insertion-order (default)
+Map<String, Integer> map = new LinkedHashMap<>();
+map.put("c", 3); map.put("a", 1); map.put("b", 2);
+// Iterates: c, a, b
+
+// LRU Cache (access-order, max 3 entries)
+Map<Integer, Integer> lru = new LinkedHashMap<>(16, 0.75f, true) {
+    protected boolean removeEldestEntry(Map.Entry e) {
+        return size() > 3;  // evict when >3 entries
+    }
+};
+lru.put(1, 1); lru.put(2, 2); lru.put(3, 3);
+lru.get(1);    // access 1 → moves to tail
+lru.put(4, 4); // evicts 2 (eldest)`,
+ uses:['LRU cache implementation','Maintaining first-seen insertion order','JSON serialization where field order matters'],
+},
+
+{id:'treemap', iface:'map', name:'TreeMap', ds:'Red-Black Tree (NavigableMap)', clr:'#534AB7', bg:'#EEEDFE', legacy:false,
+ mental:'Self-balancing Red-Black tree keyed by natural or comparator order. All entries are always sorted by key. Implements NavigableMap and SortedMap — rich API for floor, ceiling, subMap, headMap, tailMap. No null keys allowed with natural ordering.',
+ insight:'TreeMap is to Map what TreeSet is to Set. O(log n) for all operations but uniquely powerful for range queries on keys. "Find all entries with keys between A and B", "what is the floor key ≤ X" — these are O(log n) in TreeMap, O(n) in HashMap.',
+ when:'Sorted key iteration, range queries on keys, floor/ceiling of a key, sliding windows needing ordered keys.',
+ avoid:'Simple key lookup without ordering (HashMap is O(1) vs O(log n)). null keys in natural ordering.',
+ costs:[{op:'put(k, v)',crud:'C',avg:'O(log n)',note:'RB-tree insert + rebalance'},{op:'get(k)',crud:'R',avg:'O(log n)',note:'Binary search in tree'},{op:'firstKey() / lastKey()',crud:'R',avg:'O(log n)',note:'Leftmost/rightmost node'},{op:'floorKey(k) / ceilingKey(k)',crud:'R',avg:'O(log n)',note:'NavigableMap'},{op:'subMap(a, b)',crud:'R',avg:'O(log n + k)',note:'k = keys in range'},{op:'remove(k)',crud:'D',avg:'O(log n)',note:'Tree delete + rebalance'}],
+ code:`NavigableMap<Integer, String> tm = new TreeMap<>();
+tm.put(5, "five"); tm.put(2, "two"); tm.put(8, "eight");
+
+tm.firstKey();          // 2 (smallest)
+tm.lastKey();           // 8 (largest)
+tm.floorKey(4);         // 2 (≤ 4)
+tm.ceilingKey(4);       // 5 (≥ 4)
+tm.higherKey(5);        // 8 (> 5)
+tm.subMap(2, 6);        // {2=two, 5=five}
+
+// Iterate in sorted order
+for (Map.Entry<Integer,String> e : tm.entrySet()) { ... }
+
+// Descending
+tm.descendingMap().forEach((k,v) -> ...);`,
+ uses:['Calendar/scheduler: find next event after time T','Database-style range queries on keys','Frequency map with sorted output','Stock price/time-series ordered by timestamp'],
+},
+
+{id:'hashtable', iface:'map', name:'Hashtable', ds:'Synchronized Hash Table', clr:'#D0A000', bg:'#FEF3CD', legacy:true,
+ mental:'Java 1.0 predecessor to HashMap. Fully synchronized (every method locks the object), no null keys or values. Same hash table mechanics as HashMap. Kept for backward compatibility only.',
+ insight:'Legacy. Use ConcurrentHashMap for thread-safe maps (segment locking, no single global lock). Use HashMap for single-threaded code. Hashtable should never appear in new code.',
+ when:'Legacy code maintenance only.',
+ avoid:'All new code. Use ConcurrentHashMap (concurrent) or HashMap (single-threaded).',
+ costs:[{op:'put(k, v)',crud:'C',avg:'O(1)',note:'Synchronized — global lock overhead'},{op:'get(k)',crud:'R',avg:'O(1)',note:'Synchronized lookup'},{op:'remove(k)',crud:'D',avg:'O(1)',note:'Synchronized'}],
+ code:`// ⚠ Legacy — avoid in new code
+Hashtable<String, Integer> ht = new Hashtable<>();
+ht.put("a", 1);
+
+// ✅ Preferred alternatives:
+// Single-threaded:
+Map<String,Integer> map = new HashMap<>();
+// Multi-threaded:
+Map<String,Integer> safe = new ConcurrentHashMap<>();`,
+ uses:['Legacy code only'],
+},
+
+{id:'enummap', iface:'map', name:'EnumMap', ds:'Array-backed Map (enum keys)', clr:'#534AB7', bg:'#EEEDFE', legacy:false,
+ mental:'Uses a plain array indexed by the enum ordinal. Because enum ordinals are dense small integers, this gives O(1) get/put with no hashing, no collisions, no tree traversal — just a direct array lookup. Null values allowed, null keys not.',
+ insight:'The fastest possible Map when keys are an enum type. More compact than HashMap (no Entry objects, just an array). Iterates in enum declaration order. Should always be preferred over HashMap<MyEnum, V>.',
+ when:'Map keys are an enum type — always prefer EnumMap over HashMap<Enum, V>.',
+ avoid:'Non-enum keys (use HashMap or TreeMap). When null keys are needed.',
+ costs:[{op:'put(k, v)',crud:'C',avg:'O(1)',note:'Direct array write at ordinal index'},{op:'get(k)',crud:'R',avg:'O(1)',note:'Direct array read at ordinal index'},{op:'containsKey(k)',crud:'R',avg:'O(1)',note:'Null check at ordinal'},{op:'remove(k)',crud:'D',avg:'O(1)',note:'Set array slot to null'},{op:'iterate all',crud:'R',avg:'O(k)',note:'k = number of enum constants'}],
+ code:`enum Status { TODO, IN_PROGRESS, DONE }
+
+Map<Status, List<Task>> board = new EnumMap<>(Status.class);
+board.put(Status.TODO,        new ArrayList<>());
+board.put(Status.IN_PROGRESS, new ArrayList<>());
+board.put(Status.DONE,        new ArrayList<>());
+
+board.get(Status.TODO).add(new Task("Write tests"));
+
+// Iterates in enum declaration order: TODO, IN_PROGRESS, DONE
+board.forEach((status, tasks) -> System.out.println(status + ": " + tasks));`,
+ uses:['State machine transition tables','Kanban/status board grouping','Configuration maps keyed by enum option','Counting/frequency by enum category'],
+},
+];
+
+// ── COMPARE TABLE DATA ────────────────────────────────────────────────────────
+const COMPARE_DATA = [
+  {cls:'ArrayList',    iface:'List',     ds:'Dynamic Array',          access:'O(1)',    search:'O(n)',    insert:'O(1)* / O(n)',  del:'O(n)',     space:'O(n)',   order:'Index order',    null_:true,  sync:false, legacy:false, note:'Default List choice'},
+  {cls:'LinkedList',   iface:'List/Deque',ds:'Doubly Linked List',   access:'O(n)',    search:'O(n)',    insert:'O(1) ends',    del:'O(1) ends',space:'O(n)',   order:'Index order',    null_:true,  sync:false, legacy:false, note:'Use ArrayDeque for queue'},
+  {cls:'Vector',       iface:'List',     ds:'Sync Dynamic Array',     access:'O(1)',    search:'O(n)',    insert:'O(1)* / O(n)', del:'O(n)',     space:'O(n)',   order:'Index order',    null_:true,  sync:true,  legacy:true,  note:'Legacy — avoid'},
+  {cls:'Stack',        iface:'List',     ds:'LIFO (extends Vector)',   access:'O(1)',    search:'O(n)',    insert:'O(1)*',        del:'O(1)',     space:'O(n)',   order:'LIFO',           null_:true,  sync:true,  legacy:true,  note:'Use ArrayDeque.push()'},
+  {cls:'HashSet',      iface:'Set',      ds:'Hash Table',             access:'—',       search:'O(1)',    insert:'O(1)',         del:'O(1)',     space:'O(n)',   order:'None',           null_:true,  sync:false, legacy:false, note:'Default Set choice'},
+  {cls:'LinkedHashSet',iface:'Set',      ds:'Hash Table + LL',        access:'—',       search:'O(1)',    insert:'O(1)',         del:'O(1)',     space:'O(n)',   order:'Insertion order',null_:true,  sync:false, legacy:false, note:'O(1) + ordered iteration'},
+  {cls:'TreeSet',      iface:'NavigableSet',ds:'Red-Black Tree',      access:'—',       search:'O(log n)',insert:'O(log n)',     del:'O(log n)',space:'O(n)',   order:'Sorted (natural)',null_:false, sync:false, legacy:false, note:'Range queries, floor/ceiling'},
+  {cls:'EnumSet',      iface:'Set',      ds:'Bit Vector',             access:'—',       search:'O(1)',    insert:'O(1)',         del:'O(1)',     space:'O(k)',   order:'Enum declaration',null_:false, sync:false, legacy:false, note:'Enum keys only'},
+  {cls:'ArrayDeque',   iface:'Deque',    ds:'Circular Array',         access:'O(1) ends',search:'O(n)',  insert:'O(1) ends',    del:'O(1) ends',space:'O(n)',  order:'LIFO or FIFO',   null_:false, sync:false, legacy:false, note:'Preferred Stack + Queue'},
+  {cls:'PriorityQueue',iface:'Queue',    ds:'Binary Min-Heap',        access:'O(1) min',search:'O(n)',   insert:'O(log n)',     del:'O(log n)',space:'O(n)',   order:'Priority order', null_:false, sync:false, legacy:false, note:'Always get minimum first'},
+  {cls:'HashMap',      iface:'Map',      ds:'Hash Table',             access:'O(1)',    search:'O(1)',    insert:'O(1)',         del:'O(1)',     space:'O(n)',   order:'None',           null_:true,  sync:false, legacy:false, note:'Default Map choice'},
+  {cls:'LinkedHashMap',iface:'Map',      ds:'Hash Table + LL',        access:'O(1)',    search:'O(1)',    insert:'O(1)',         del:'O(1)',     space:'O(n)',   order:'Insertion/access',null_:true, sync:false, legacy:false, note:'LRU cache pattern'},
+  {cls:'TreeMap',      iface:'NavigableMap',ds:'Red-Black Tree',      access:'O(log n)',search:'O(log n)',insert:'O(log n)',    del:'O(log n)',space:'O(n)',   order:'Sorted keys',    null_:false, sync:false, legacy:false, note:'Sorted map, range queries'},
+  {cls:'Hashtable',    iface:'Map',      ds:'Sync Hash Table',        access:'O(1)',    search:'O(1)',    insert:'O(1)',         del:'O(1)',     space:'O(n)',   order:'None',           null_:false, sync:true,  legacy:true,  note:'Legacy — use ConcurrentHashMap'},
+  {cls:'EnumMap',      iface:'Map',      ds:'Array (ordinal index)',   access:'O(1)',    search:'O(1)',    insert:'O(1)',         del:'O(1)',     space:'O(k)',   order:'Enum declaration',null_:false,sync:false, legacy:false, note:'Fastest Map for enum keys'},
+];
+
+// ── WIZARD ────────────────────────────────────────────────────────────────────
+const WIZ_Q = [
+  {q:'What kind of data structure do you need?', k:'kind', opts:[
+    {l:'Ordered sequence — access elements by index or position', v:'list'},
+    {l:'Unique elements only — membership testing and deduplication', v:'set'},
+    {l:'FIFO queue or LIFO stack — process in arrival or reverse order', v:'queue'},
+    {l:'Key → value mapping — look up by key', v:'map'},
+  ]},
+  {q:'Do you need a specific ordering of elements?', k:'order', opts:[
+    {l:'No ordering needed — fastest possible operations', v:'none'},
+    {l:'Insertion order — iterate in the order elements were added', v:'ins'},
+    {l:'Sorted (natural or comparator) order', v:'sorted'},
+    {l:'Priority order — always access the min (or max) first', v:'priority'},
+  ]},
+  {q:'What operations dominate your use case?', k:'ops', opts:[
+    {l:'Random access by index — get(i), set(i)', v:'randaccess'},
+    {l:'Add / remove at both ends — head and tail', v:'ends'},
+    {l:'Fast membership check — contains(), get() by key', v:'lookup'},
+    {l:'Range queries — floor, ceiling, subSet, subMap', v:'range'},
+    {l:'Enum keys / enum elements only', v:'enum'},
+  ]},
+  {q:'Thread safety and null elements?', k:'safety', opts:[
+    {l:'Single-threaded — no synchronization needed', v:'single'},
+    {l:'Multi-threaded — need concurrent access', v:'concurrent'},
+    {l:'Null keys or null elements must be supported', v:'nulls'},
+  ]},
+];
+
+const WIZ_RES = {
+  'list+none+randaccess':   {cls:'ArrayList',     why:'O(1) random access, O(1)* append, cache-friendly array. The default List for most use cases.', alt:'LinkedList if you need O(1) insert/delete at both ends too'},
+  'list+none+ends':         {cls:'ArrayDeque',    why:'O(1) add/remove at both ends, better cache performance than LinkedList. Use as List<> via Deque interface.', alt:'LinkedList if you also need indexed List access'},
+  'list+ins+randaccess':    {cls:'ArrayList',     why:'ArrayList preserves insertion order by definition (index-based). O(1) access by index.', alt:'LinkedHashSet if uniqueness also matters'},
+  'list+ins+ends':          {cls:'ArrayDeque',    why:'Circular array — O(1) at both ends, maintains FIFO or LIFO order naturally.', alt:'LinkedList for rare cases needing List + Deque APIs'},
+  'list+sorted+randaccess': {cls:'ArrayList + sort','why':'Sort the ArrayList with Collections.sort() or List.sort(). O(n log n) sort, O(log n) binary search after.', alt:'TreeSet if elements must always be unique and sorted'},
+  'set+none+lookup':        {cls:'HashSet',       why:'O(1) contains, add, remove with no ordering overhead. The default Set.', alt:'LinkedHashSet if you need predictable iteration order'},
+  'set+ins+lookup':         {cls:'LinkedHashSet', why:'O(1) operations AND iterates in insertion order. Small overhead over HashSet.', alt:'HashSet if iteration order does not matter'},
+  'set+sorted+range':       {cls:'TreeSet',       why:'O(log n) all ops, always sorted. Full NavigableSet API: floor, ceiling, subSet, headSet.', alt:'LinkedHashSet if you only need insertion order, not sorted'},
+  'set+none+enum':          {cls:'EnumSet',       why:'Bit-vector backed — O(1) ops, minimal memory, iterates in enum declaration order. Always prefer over HashSet<Enum>.', alt:'HashSet<Enum> is the fallback but always use EnumSet when keys are enums'},
+  'queue+priority+lookup':  {cls:'PriorityQueue', why:'Binary min-heap — O(1) peek at minimum, O(log n) poll. Use Comparator.reverseOrder() for max-heap.', alt:'TreeSet if you also need contains() in O(log n)'},
+  'queue+none+ends':        {cls:'ArrayDeque',    why:'Fastest Stack + Queue. No lock overhead, contiguous array, O(1) both ends. The recommended choice over Stack and LinkedList.', alt:'LinkedList only if you also need List-indexed access'},
+  'map+none+lookup':        {cls:'HashMap',       why:'O(1) get/put/remove, default Map choice. Java 8+ tree-bin protects against hash collision worst-case.', alt:'LinkedHashMap for insertion-order iteration'},
+  'map+ins+lookup':         {cls:'LinkedHashMap', why:'O(1) operations + insertion-order (or access-order) iteration. Build LRU caches by overriding removeEldestEntry.', alt:'HashMap if ordering is irrelevant'},
+  'map+sorted+range':       {cls:'TreeMap',       why:'O(log n) ops, always sorted by key. NavigableMap: floorKey, ceilingKey, subMap, headMap — O(log n) range queries.', alt:'HashMap for pure lookup when sorted output is not needed'},
+  'map+none+enum':          {cls:'EnumMap',       why:'Array-backed with enum ordinal as index — O(1) get/put with no hashing, no collisions, minimal memory. Always prefer over HashMap<Enum, V>.', alt:'HashMap<Enum, V> if enum assumption must be avoided'},
+  'map+none+concurrent':    {cls:'ConcurrentHashMap',why:'Segment-locked (Java 8: CAS + synchronized bins) thread-safe Map. Much faster than Hashtable under contention.', alt:'Collections.synchronizedMap(new HashMap<>()) for simple cases'},
+};
+
+function getWizKey(ans) {
+  const k = ans.kind||'list', o = ans.order||'none', op = ans.ops||'lookup', s = ans.safety||'single';
+  if (s === 'concurrent') return 'map+none+concurrent';
+  const key = `${k}+${o}+${op}`;
+  return WIZ_RES[key] ? key : `${k}+none+lookup`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let curIface = 'list', curImpl = 'arraylist', curView = 'explorer';
+let wizStep = 0, wizAns = {};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+function cc(s) {
+  if (!s || s === '—') return 'ox';
+  if (/^O\(1\)/.test(s) && !s.includes('log')) return 'o1';
+  if (s.includes('log n')) return 'ol';
+  if (s.includes('O(n)') || s.includes('O(k)')) return 'on';
+  return 'ox';
+}
+function crudClr(c) {
+  return {C:'#0C447C', R:'#3B6D11', U:'#854F0B', D:'#A32D2D'}[c] || '#534AB7';
+}
+function crudBg(c) {
+  return {C:'#E6F1FB', R:'#EAF3DE', U:'#FAEEDA', D:'#FCEBEB'}[c] || '#EEEDFE';
+}
+function ifaceClr(id) { return (IFACES.find(i=>i.id===id)||{clr:'#534AB7'}).clr; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER EXPLORER
+// ══════════════════════════════════════════════════════════════════════════════
+function renderIfaceTiles() {
+  document.getElementById('iface-tiles').innerHTML = IFACES.map(iface => `
+    <div class="iface-tile${iface.id===curIface?' act':''}"
+         style="border-color:${iface.id===curIface?iface.clr:'transparent'};border-left-color:${iface.clr}"
+         onclick="selectIface('${iface.id}')">
+      <div class="iface-name" style="color:${iface.clr}">${iface.name}</div>
+      <div class="iface-sub">${iface.sub}</div>
+      <div class="iface-count" style="color:${iface.clr}">${iface.count} implementation${iface.count!==1?'s':''}</div>
+    </div>`).join('');
+}
+
+function renderImplCards() {
+  const visible = curIface === 'all' ? IMPLS : IMPLS.filter(i => i.iface === curIface);
+  document.getElementById('impl-cards').innerHTML = visible.map(impl => `
+    <div class="impl-card${impl.id===curImpl?' act':''}"
+         style="border-left-color:${impl.clr};${impl.id===curImpl?'box-shadow:0 0 0 2px '+impl.clr+'40':''}"
+         onclick="selectImpl('${impl.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="impl-name" style="color:${impl.clr}">${impl.name}${impl.legacy?'<span class="badge-legacy">legacy</span>':''}</div>
+      </div>
+      <div class="impl-ds">${impl.ds}</div>
+      <div class="impl-chips">
+        <span class="chip" style="background:${ifaceClr(impl.iface)}20;color:${ifaceClr(impl.iface)}">${impl.iface.toUpperCase()}</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderDetail() {
+  const impl = IMPLS.find(i => i.id === curImpl);
+  if (!impl) return;
+  const iface = IFACES.find(i => i.id === impl.iface) || IFACES[0];
+  document.getElementById('detail-area').innerHTML = `
+  <div class="detail-panel">
+    <div class="detail-hdr" style="background:${impl.bg}">
+      <div class="detail-hdr-num" style="color:${impl.clr}">
+        ${String(IMPLS.indexOf(impl)+1).padStart(2,'0')}
+      </div>
+      <div>
+        <div class="detail-hdr-name" style="color:${impl.clr}">
+          ${impl.name}
+          ${impl.legacy?'<span class="badge-legacy">⚠ Legacy</span>':'<span class="badge-preferred">✓ Modern</span>'}
+        </div>
+        <div class="detail-hdr-iface">implements ${iface.name} · ${impl.ds}</div>
+      </div>
+    </div>
+    <div class="detail-body">
+      ${impl.legacy?`<div class="legacy-banner">⚠ <b>Legacy class</b> — present for backward compatibility only. Avoid in new Java code. See the code snippet for the preferred modern alternative.</div>`:''}
+      <div class="grid2">
+        <div class="card">
+          <div class="cl">Mental model</div>
+          <div class="mental-box">${impl.mental}</div>
+          <div class="cl" style="margin-top:8px">Key insight</div>
+          <div class="insight-box">${impl.insight}</div>
+        </div>
+        <div class="card">
+          <div class="cl">CRUD complexity</div>
+          <table class="ct">
+            <thead><tr><th>Operation</th><th>Op</th><th>Average</th><th>Note</th></tr></thead>
+            <tbody>${impl.costs.map(c=>`<tr>
+              <td style="font-size:11px">${c.op}</td>
+              <td><span style="background:${crudBg(c.crud)};color:${crudClr(c.crud)};padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700">${c.crud}</span></td>
+              <td><span class="${cc(c.avg)}">${c.avg}</span></td>
+              <td style="font-size:10.5px;color:#9898AA">${c.note}</td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="card">
+          <div class="cl" style="color:${impl.clr}">Pick when</div>
+          ${impl.when.split('. ').filter(Boolean).map(s=>`<div class="li"><div class="dot" style="background:#3B6D11"></div><span style="font-size:12.5px">${s}</span></div>`).join('')}
+          <div class="cl" style="margin-top:10px;color:#A32D2D">Avoid when</div>
+          ${impl.avoid.split('. ').filter(Boolean).map(s=>`<div class="li"><div class="dot" style="background:#A32D2D"></div><span style="font-size:12.5px">${s}</span></div>`).join('')}
+        </div>
+        <div class="card" style="grid-column:span 2">
+          <div class="cl">Java code example</div>
+          <div class="code-snippet">${impl.code
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/(\/\/.*)/g,'<span class="cm">$1</span>')
+            .replace(/\b(List|Map|Set|Queue|Deque|NavigableSet|NavigableMap|EnumSet|EnumMap|PriorityQueue|ArrayDeque|ArrayList|LinkedList|HashMap|LinkedHashMap|TreeMap|TreeSet|LinkedHashSet|HashSet|Integer|String|Collections|Comparator|Map\.Entry)\b/g,'<span class="tp">$1</span>')
+            .replace(/\b(new|import|for|if|return|protected|boolean|true|false|null)\b/g,'<span class="kw">$1</span>')}</div>
+          <div class="cl" style="margin-top:10px">Real-world uses</div>
+          ${impl.uses.map(u=>`<div class="li"><div class="dot" style="background:${impl.clr}"></div><span style="font-size:12.5px">${u}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function selectIface(id) {
+  curIface = id;
+  const firstImpl = id === 'all' ? IMPLS[0] : IMPLS.find(i => i.iface === id);
+  if (firstImpl) curImpl = firstImpl.id;
+  renderIfaceTiles(); renderImplCards(); renderDetail();
+}
+function selectImpl(id) {
+  curImpl = id;
+  renderImplCards(); renderDetail();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER HIERARCHY (SVG)
+// ══════════════════════════════════════════════════════════════════════════════
+function renderHierarchy() {
+  const g = document.getElementById('hier-g');
+  const IBOX = (x,y,w,h,label,clr,bg,dashed=false) => {
+    const r = dashed
+      ? `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${bg}" stroke="${clr}" stroke-width="1.5" stroke-dasharray="5,3"/>`
+      : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${bg}" stroke="${clr}" stroke-width="1.5"/>`;
+    const t = `<text x="${x+w/2}" y="${y+h/2+4}" text-anchor="middle" fill="${clr}" font-size="11" font-family="system-ui,sans-serif" font-weight="700">${label}</text>`;
+    return r+t;
+  };
+  const LINE = (x1,y1,x2,y2) =>
+    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#B8B8CC" stroke-width="1.2" marker-end="url(#arr)"/>`;
+
+  let html = `
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#B8B8CC"/>
+    </marker>
+  </defs>
+
+  <!-- Iterable -->
+  ${IBOX(340,10,130,26,'«interface» Iterable','#534AB7','#EEEDFE')}
+  ${LINE(405,36,405,58)}
+
+  <!-- Collection -->
+  ${IBOX(330,58,150,26,'«interface» Collection','#534AB7','#EEEDFE')}
+  ${LINE(310,71,230,90)} ${LINE(405,84,405,104)} ${LINE(500,71,570,90)} ${LINE(450,71,620,200)}
+
+  <!-- List -->
+  ${IBOX(170,90,120,26,'«interface» List','#4A90D9','#E8F0FE')}
+  <!-- Set -->
+  ${IBOX(340,104,130,26,'«interface» Set','#3B6D11','#EAF3DE')}
+  <!-- Queue -->
+  ${IBOX(515,90,120,26,'«interface» Queue','#854F0B','#FAEEDA')}
+
+  <!-- List impls -->
+  ${LINE(200,116,160,150)} ${LINE(220,116,220,150)} ${LINE(240,116,280,150)} ${LINE(260,116,340,150)}
+  ${IBOX(100,150,110,26,'ArrayList','#4A90D9','#EBF4FF')}
+  ${IBOX(168,150,110,26,'LinkedList','#4A90D9','#EBF4FF')}
+  ${IBOX(238,150,80,26,'Vector†','#D0A000','#FEF3CD',true)}
+  ${IBOX(332,150,60,26,'Stack†','#D0A000','#FEF3CD',true)}
+
+  <!-- Set impls -->
+  ${LINE(375,130,290,200)} ${LINE(390,130,360,200)} ${LINE(410,130,430,200)} ${LINE(425,130,500,200)}
+  ${IBOX(238,200,110,26,'HashSet','#3B6D11','#EAF3DE')}
+  ${IBOX(352,200,130,26,'LinkedHashSet','#3B6D11','#EAF3DE')}
+  ${IBOX(486,200,90,26,'TreeSet','#3B6D11','#EAF3DE')}
+  ${IBOX(580,200,80,26,'EnumSet','#3B6D11','#EAF3DE')}
+
+  <!-- Deque extends Queue -->
+  ${LINE(575,103,630,130)}
+  ${IBOX(590,130,120,26,'«interface» Deque','#854F0B','#FAEEDA')}
+  ${LINE(620,156,600,200)} ${LINE(650,156,680,200)}
+  ${IBOX(545,200,110,26,'ArrayDeque','#854F0B','#FAEEDA')}
+  ${IBOX(660,200,120,26,'PriorityQueue','#854F0B','#FAEEDA')}
+
+  <!-- PriorityQueue from Queue directly -->
+  ${LINE(575,103,720,200)}
+
+  <!-- Map (separate) -->
+  ${IBOX(130,10,120,26,'«interface» Map','#534AB7','#EEEDFE')}
+  ${LINE(150,36,110,100)} ${LINE(175,36,165,100)} ${LINE(200,36,220,100)} ${LINE(215,36,295,100)} ${LINE(225,36,360,100)}
+  ${IBOX(55,100,80,26,'HashMap','#534AB7','#EEEDFE')}
+  ${IBOX(143,100,120,26,'LinkedHashMap','#534AB7','#EEEDFE')}
+  ${IBOX(197,100,80,26,'TreeMap','#534AB7','#EEEDFE')}
+  ${IBOX(279,100,80,26,'EnumMap','#534AB7','#EEEDFE')}
+  ${IBOX(355,100,82,26,'Hashtable†','#D0A000','#FEF3CD',true)}
+
+  <!-- labels -->
+  <text x="10" y="8" font-size="9" fill="#9898AA" font-family="system-ui">java.lang</text>
+  <text x="10" y="98" font-size="9" fill="#9898AA" font-family="system-ui">java.util — Map hierarchy</text>
+  <text x="280" y="50" font-size="9" fill="#9898AA" font-family="system-ui">java.util — Collection hierarchy</text>
+  `;
+  g.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER COMPARE
+// ══════════════════════════════════════════════════════════════════════════════
+function renderCompare() {
+  const hdrClr = {List:'#4A90D9', 'List/Deque':'#4A90D9', Set:'#3B6D11', NavigableSet:'#3B6D11',
+    Queue:'#854F0B', Deque:'#854F0B', Map:'#534AB7', NavigableMap:'#534AB7'};
+  document.getElementById('cmp-table').innerHTML = `
+  <thead><tr>
+    <th>#</th><th>Class</th><th>Interface</th><th>Data Structure</th>
+    <th>Access</th><th>Search</th><th>Insert</th><th>Delete</th>
+    <th>Order</th><th>Null?</th><th>Sync?</th><th>Note</th>
+  </tr></thead>
+  <tbody>${COMPARE_DATA.map((r,i)=>{
+    const clr = hdrClr[r.iface]||'#534AB7';
+    const impl = IMPLS.find(x=>x.name===r.cls||x.id===r.cls.toLowerCase().replace(/\s+/g,'_'));
+    return `<tr style="${r.legacy?'opacity:.7':''}">
+      <td style="color:#9898AA;font-size:11px;font-weight:700">${String(i+1).padStart(2,'0')}</td>
+      <td style="font-weight:700;color:${clr};cursor:pointer" onclick="jumpToImpl('${r.cls}')">${r.cls}${r.legacy?'<span class="badge-legacy" style="margin-left:3px">†</span>':''}</td>
+      <td><span class="cmp-iface" style="background:${clr}18;color:${clr}">${r.iface}</span></td>
+      <td style="font-size:11.5px;color:#5A5A72">${r.ds}</td>
+      <td><span class="${cc(r.access)}">${r.access}</span></td>
+      <td><span class="${cc(r.search)}">${r.search}</span></td>
+      <td><span class="${cc(r.insert)}">${r.insert}</span></td>
+      <td><span class="${cc(r.del)}">${r.del}</span></td>
+      <td style="font-size:11px;color:#5A5A72;white-space:nowrap">${r.order}</td>
+      <td style="text-align:center">${r.null_?'✓':'✗'}</td>
+      <td style="text-align:center">${r.sync?'<span style="color:#D0A000;font-weight:700">✓</span>':'—'}</td>
+      <td style="font-size:11px;color:#5A5A72">${r.note}</td>
+    </tr>`;
+  }).join('')}</tbody>`;
+}
+function jumpToImpl(name) {
+  const impl = IMPLS.find(i=>i.name===name);
+  if (!impl) return;
+  curImpl = impl.id; curIface = impl.iface;
+  switchView('explorer');
+  renderIfaceTiles(); renderImplCards(); renderDetail();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER WIZARD
+// ══════════════════════════════════════════════════════════════════════════════
+function renderWizard() {
+  const el = document.getElementById('wiz');
+  if (wizStep >= WIZ_Q.length) {
+    const key = getWizKey(wizAns);
+    const res = WIZ_RES[key] || WIZ_RES['list+none+randaccess'];
+    const impl = IMPLS.find(i=>i.name===res.cls||i.cls===res.cls);
+    const clr = impl ? impl.clr : '#534AB7';
+    el.innerHTML = `
+    <div class="wtrail">${Object.values(wizAns).map(v=>`<span class="wchip">${v}</span>`).join('')}</div>
+    <div class="res-card" style="border-color:${clr}">
+      <div style="font-size:10.5px;font-weight:700;color:#9898AA;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Recommended class</div>
+      <div class="res-name" style="color:${clr}">${res.cls}</div>
+      <p class="res-why">${res.why}</p>
+      <p style="font-size:12.5px;color:#888"><strong>Also consider:</strong> ${res.alt}</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="wizReset()">↺ Start over</button>
+      ${impl?`<button class="btn pri" onclick="jumpToImpl('${res.cls}')">View ${res.cls} detail →</button>`:''}
+    </div>`;
+    return;
+  }
+  const q = WIZ_Q[wizStep];
+  el.innerHTML = `
+  <p style="font-size:12px;color:#9898AA;margin-bottom:8px">Question ${wizStep+1} of ${WIZ_Q.length}</p>
+  <div class="pb"><div class="pf" style="width:${(wizStep/WIZ_Q.length)*100}%"></div></div>
+  <p class="wq">${q.q}</p>
+  ${q.opts.map(o=>`<button class="wo" onclick="wizAnswer('${q.k}','${o.v}')">${o.l}</button>`).join('')}`;
+}
+function wizAnswer(k,v) { wizAns[k]=v; wizStep++; renderWizard(); }
+function wizReset() { wizStep=0; wizAns={}; renderWizard(); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ══════════════════════════════════════════════════════════════════════════════
+function switchView(v) {
+  curView = v;
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('act'));
+  document.getElementById('view-'+v).classList.add('act');
+  document.querySelectorAll('.nt').forEach(b=>b.classList.toggle('act',b.dataset.view===v));
+  if (v==='hierarchy') renderHierarchy();
+  if (v==='compare')   renderCompare();
+  if (v==='wizard')    renderWizard();
+}
+document.querySelectorAll('.nt').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+renderIfaceTiles(); renderImplCards(); renderDetail();
+</script>
+</body>
+</html>
